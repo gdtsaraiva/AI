@@ -6,3 +6,4 @@ actions(s) returns a list of valid moves at state s
 result(s, a) returns the sucessor game state after playing move a at state s
 load_board(s) loads a board from an opened file stream s (see below for
 format specification) and returns the corresponding state
+Será que esta merda vai funcionar agora?
