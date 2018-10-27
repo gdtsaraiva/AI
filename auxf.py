@@ -25,7 +25,7 @@ def is_string_surrounded(s, point, points_in_open_strings = []):
         if 2 in neighbours:
             open = 1
 
-        buddies_rel_coord = [index for index, value in enumerate(neighbours) if value == 1]
+        buddies_rel_coord = [index for index, value in enumerate(neighbours) if value == 1] #??????
 
         for buddy_rel_coord in buddies_rel_coord:
             buddy_coord = rel2abs_pos(unchecked_buddy, buddy_rel_coord)
