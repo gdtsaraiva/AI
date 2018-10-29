@@ -77,24 +77,94 @@ class Game:
         return 1
 
     ###################################################################################################################
-    #   function:   returns the payoff of state s if it is terminal
-    #   input:      state, and "score" with respect to player p
-    #   output:     payoff of state if it is terminal (1 if p wins, -1 if p loses, 0 in case of draw)
-    #               otherwise, its evaluation with respect to player p
+    #   function:   returns the payoff of state s if it is terminal, otherwise evaluation with respect to player p
+    #   input:      state s, player p
+    #   output:     evaluation: 1 if p wins , -1 if p loses, 0 in case of draw
+    #               better results closer to 1 worst closer to -1 (careful to avoid -1, 0, 1 when not terminal)
     ###################################################################################################################
+    # loop 1 - through all board points:
+    #       ID all strings
+    #       Build 2 structures (one for each player) containing: coordinates of his string(s) with fewest liberties as well as their coordinates
+    #           structure worst_strings_p1(/p2): ([(pi1,pj1),(pi2,pj2),...],[(li1,lj1),(li2,lj2),...])
+    #       If there is any string with 0 liberties return -1 or 1 immediately
+    #
+    # loop?? 2 - through data structures: run through the 2 structures previously built
+    #       if there is any +inf or -inf return it immediately (if 2 with only one liberty even if you're the next playing it's also inf)
+    #       calculate weights of each string
     def utility(self, s, p):
-        board = list(s)
-        n = board[0]
-        board = board[2:]
+        state = copy.deepcopy(s)
+        board = state[2:]
+        next_player = state[1]  # next_player != p
+        can_avoid_suicide = 0
+        open_strings = []
+        worst_strings_p1 = []
+        worst_strings_p2 = []
+        for i, line in enumerate(board):
+            for j, point_val in enumerate(line):
+                point = (i, j)
+                if point_val == 0:
+                    move = (next_player, i + 1, j + 1)
+                    if self.is_suicide(state, move) == 0:
+                        can_avoid_suicide = 1
+                    continue
+                for open_string in open_strings:
+                    if point in open_string:
+                        continue
 
-        if self.terminal_test(s):
-            pass
-            # return calc_payoff(s, p)
-                # payoff: (1 if p wins, -1 if p loses, 0 in case of draw) -> check who wins or if draw
-        else:
-            pass
-            # eval_state(s, p)
-                # are the hypothetically captured stones considered in the point counting?
+                ########## if here, it's not empty nor in a previously identified open string ##########
+                string = [point]
+                unchecked_buddies = [point]
+                checked_buddies = []
+                string_liberties = []
+                while len(unchecked_buddies) != 0:
+                    unchecked_buddy = unchecked_buddies[0]
+                    del unchecked_buddies[0]
+                    checked_buddies.extend([unchecked_buddy])
+                    neighbours = auxf.check_neighbourhood(state, unchecked_buddy)
+                    liberties_rel_coord = [index for index, value in enumerate(neighbours) if value == 2]
+                    for liberty_rel_coord in liberties_rel_coord:
+                        liberty_coord = auxf.rel2abs_pos(unchecked_buddy, liberty_rel_coord)
+                        if liberty_coord not in string_liberties:
+                            string_liberties.extend([liberty_coord])
+                    buddies_rel_coord = [index for index, value in enumerate(neighbours) if value == 1]
+                    for buddy_rel_coord in buddies_rel_coord:
+                        buddy_coord = auxf.rel2abs_pos(unchecked_buddy, buddy_rel_coord)
+                        if buddy_coord not in string:
+                            string.extend([buddy_coord])
+                        if buddy_coord not in unchecked_buddies and buddy_coord not in checked_buddies:
+                            unchecked_buddies.extend([buddy_coord])
+
+                ########## here, we have a list with the new string's coordinates and one with its libs ##########
+                if len(string_liberties) > 0:
+                    open_strings.append(string)
+                    new_n_lib = len(string_liberties)
+                    if point_val == 1:  # string belongs to player 1
+                        old_n_lib = len(worst_strings_p1[0][1])
+                        if new_n_lib > old_n_lib:
+                            continue
+                        elif new_n_lib == old_n_lib:
+                            worst_strings_p1.extend([(string, string_liberties)])
+                        else:
+                            worst_strings_p1 = [(string, string_liberties)]
+                    elif point_val == 2:  # string belongs to player 1
+                        old_n_lib = len(worst_strings_p2[0][1])
+                        if new_n_lib > old_n_lib:
+                            continue
+                        elif new_n_lib == old_n_lib:
+                            worst_strings_p2.extend([(string, string_liberties)])
+                        else:
+                            worst_strings_p2 = [(string, string_liberties)]
+                elif p == next_player:
+                    return -1
+                else:
+                    return 1
+        if can_avoid_suicide == 0:
+            return 0
+
+        ###############################################################################################################
+        # here, we have payoff (lost, draw, win) and we have the data structures worst_strings_p1 and (p2)
+        # now, calculate other evaluations, being careful not to return -1, 0, 1 in these
+
 
     ###################################################################################################################
     #   function:   returns a list of valid moves at state s
@@ -194,3 +264,5 @@ jogo1 = Game()
 file = open("C:\\Users\\HP\\Documents\\IST\\a5s1\\IASD\\Projects\\board.txt", "r")
 state = jogo1.load_board(file)
 print(jogo1.terminal_test(state))
+
+
