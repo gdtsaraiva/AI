@@ -146,7 +146,7 @@ class Game:
                             worst_strings_p1.extend([(string, string_liberties)])
                         else:
                             worst_strings_p1 = [(string, string_liberties)]
-                    elif point_val == 2:  # string belongs to player 1
+                    elif point_val == 2:  # string belongs to player 2
                         old_n_lib = len(worst_strings_p2[0][1])
                         if new_n_lib > old_n_lib:
                             continue
@@ -158,7 +158,7 @@ class Game:
                     return -1
                 else:
                     return 1
-        if can_avoid_suicide == 0:
+        if can_avoid_suicide == 0: #UNAVOIDABLE SUICIDE IS A DRAW
             return 0
 
         ###############################################################################################################

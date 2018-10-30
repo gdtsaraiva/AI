@@ -20,4 +20,28 @@ unnecessary complexity, we chose to incorporate p in the state.
 
 2)Describe the evaluation function used and justify its design.
 
-The evaluation function that calculates the payoff of a state should 
+ - return  1 - WIN
+ - return  0 - DRAW
+ - return -1 - LOSE 
+
+The evaluation function calculates how advantageous a state S is in respect to a player p, i.e. how close player p is to
+a winning state.
+
+To begin with, we associated the number of liberties of the player's strings as correlated to its good situation
+defensively (a string with more liberties has less ways of being captured), and the number of liberties of the opponent's
+ strings as inversely correlated to an offensive advantage (if the opponent's strings have less liberties, player p has more
+ ways to capture the string).
+
+Computationally, the evaluation function does the following:
+1) Identifies player p's strings and the location/number of its liberties. Saves only the strings and location of liberties
+that has the least number of liberties;
+2) Does the same process for p's opponent;
+
+The evaluation function can now assign an utility value to each state based on the number and location of the player's and
+opponent's liberties.
+From our previous intuition above, we can state that the utility value is:
+ - Positive if it is the opponent with the string with the least number of liberties;
+ - Negative if it is the player p with the string with the least number of liberties;
+
+It is now important to state that 
+ 
